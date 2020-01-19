@@ -291,7 +291,7 @@ def lstm_step_forward(x, prev_h, prev_c, Wx, Wh, b):
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
     A = prev_h.dot(Wh)+x.dot(Wx)+b
-    A_splitted = np.hsplit(a, 4)
+    A_splitted = np.hsplit(A, 4)
     i = sigmoid(A_splitted[0])
     f = sigmoid(A_splitted[1])
     o = sigmoid(A_splitted[2])
@@ -341,7 +341,7 @@ def lstm_step_backward(dnext_h, dnext_c, cache):
     dnext_c_t = dnext_c1 + dnext_c
     dprev_c = dnext_c_t*f
 
-    di = dnext_c_t*(i*(1-i))
+    di = dnext_c_t*(i*(1-i))*g
     df = dnext_c_t*prev_c*(f*(1-f))
     do = dnext_h*np.tanh(next_c)*(o*(1-o))
     dg = dnext_c_t*i*(1-g**2)
@@ -407,7 +407,7 @@ def lstm_forward(x, h0, Wx, Wh, b):
     #                               END OF YOUR CODE                             #
     ##############################################################################
 
-    return h, cache
+    return h, caches
 
 
 def lstm_backward(dh, cache):
@@ -439,7 +439,7 @@ def lstm_backward(dh, cache):
     dx[:,-1,:], dnext_h, dnext_c, dWx, dWh, db = lstm_step_backward(dh[:,-1,:], dnext_c, cache[-1])
     
     for t in range(T-1,0,-1):
-        dx[:,t,:], dnext_h, dnext_c, dWx_t, dWh_t, db_t = lstm_step_backward(dnext_h+dh[:,t,:], dnext_c, cache[t-1])
+        dx[:,t-1,:], dnext_h, dnext_c, dWx_t, dWh_t, db_t = lstm_step_backward(dnext_h+dh[:,t-1,:], dnext_c, cache[t-1])
         dWx += dWx_t
         dWh += dWh_t
         db += db_t
